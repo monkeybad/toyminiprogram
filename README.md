@@ -8,4 +8,13 @@
 <br />4.bingtap事件
 <br />由于刚刚起步，待实现的部分还很多，这里就不列了...
 <br />
+# 演示
+## 1.wxml、wxss、js代码
+
+## 2.点击事件演示
+
+## 调试程序执行方法
+'./run_devtools.sh'
+<br />
+## 其他
 <br />接下来计划完成比较熟悉的手机端部分，针对safari的inpect，iOS端真机调试方案应该只有谷歌官方的[ios-webkit-debug-proxy](https://github.com/google/ios-webkit-debug-proxy)可以解决了
