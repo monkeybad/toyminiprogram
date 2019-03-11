@@ -1,0 +1,8 @@
+NSLocationUsageDescription = "Chromium erişim izni aldıktan sonra, web siteleri de erişim için sizden izin isteyebilecek.";
+NSCameraUsageDescription = "Chromium erişim izni aldıktan sonra, web siteleri de erişim için sizden izin isteyebilecek.";
+CFBundleName = "nwjs";
+CFBundleDisplayName = "nwjs";
+CFBundleGetInfoString = "nwjs 72.0.3626.81, Copyright 2019 The Chromium Authors, NW.js contributors, Node.js. All rights reserved.";
+NSHumanReadableCopyright = "Copyright 2019 The Chromium Authors, NW.js contributors, Node.js. All rights reserved.";
+NSBluetoothPeripheralUsageDescription = "Chromium erişim izni aldıktan sonra, web siteleri de erişim için sizden izin isteyebilecek.";
+NSMicrophoneUsageDescription = "Chromium erişim izni aldıktan sonra, web siteleri de erişim için sizden izin isteyebilecek.";

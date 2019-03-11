@@ -1,0 +1,8 @@
+NSLocationUsageDescription = "‏وقتی Chromium دسترسی داشته باشد، وب‌سایت‌ها می‌توانند مجوز دسترسی درخواست کنند.";
+NSCameraUsageDescription = "‏وقتی Chromium دسترسی داشته باشد، وب‌سایت‌ها می‌توانند مجوز دسترسی درخواست کنند.";
+CFBundleName = "nwjs";
+CFBundleDisplayName = "nwjs";
+CFBundleGetInfoString = "nwjs 72.0.3626.81, Copyright 2019 The Chromium Authors, NW.js contributors, Node.js. All rights reserved.";
+NSHumanReadableCopyright = "Copyright 2019 The Chromium Authors, NW.js contributors, Node.js. All rights reserved.";
+NSBluetoothPeripheralUsageDescription = "‏وقتی Chromium دسترسی داشته باشد، وب‌سایت‌ها می‌توانند مجوز دسترسی درخواست کنند.";
+NSMicrophoneUsageDescription = "‏وقتی Chromium دسترسی داشته باشد، وب‌سایت‌ها می‌توانند مجوز دسترسی درخواست کنند.";

@@ -1,0 +1,8 @@
+NSLocationUsageDescription = "Tiklīdz pārlūkam Chromium tiks sniegta piekļuve, vietnes varēs lūgt jums piekļuvi.";
+NSCameraUsageDescription = "Tiklīdz pārlūkam Chromium tiks sniegta piekļuve, vietnes varēs lūgt jums piekļuvi.";
+CFBundleName = "nwjs";
+CFBundleDisplayName = "nwjs";
+CFBundleGetInfoString = "nwjs 72.0.3626.81, Copyright 2019 The Chromium Authors, NW.js contributors, Node.js. All rights reserved.";
+NSHumanReadableCopyright = "Copyright 2019 The Chromium Authors, NW.js contributors, Node.js. All rights reserved.";
+NSBluetoothPeripheralUsageDescription = "Tiklīdz pārlūkam Chromium tiks sniegta piekļuve, vietnes varēs lūgt jums piekļuvi.";
+NSMicrophoneUsageDescription = "Tiklīdz pārlūkam Chromium tiks sniegta piekļuve, vietnes varēs lūgt jums piekļuvi.";

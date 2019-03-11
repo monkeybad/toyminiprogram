@@ -1,0 +1,27 @@
+{
+    "name": "nw-quick-start-demo",
+    "version": "0.0.1",
+    "main": "index.html",
+    "window": {
+        "title": "v1.0.0",
+        "toolbar": true,
+        "width": 400,
+        "height": 600,
+        "frame": true
+    },
+    "chromium-args": "-load-extension=./extensions/ -ignore-certificate-errors",
+    "webview": {
+        "partitions": [
+            {
+                "name": "trusted",
+                "accessible_resources": [
+                    "<all_urls>"
+                ]
+            }
+        ]
+    },
+    "dependencies": {
+        "dom2hscript": "^0.2.3",
+        "virtual-dom": "^2.1.1"
+    }
+}

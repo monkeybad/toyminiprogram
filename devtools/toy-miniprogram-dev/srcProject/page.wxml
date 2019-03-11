@@ -1,0 +1,5 @@
+<view id="root" class="outter">
+	<view id="sub" class="inner" bindtap="clickedCount">
+		<text>Clicked count:</text><text>{{count}}</text>
+	</view>
+</view>

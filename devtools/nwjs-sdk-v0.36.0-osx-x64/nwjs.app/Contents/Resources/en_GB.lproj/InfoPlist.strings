@@ -1,0 +1,8 @@
+NSLocationUsageDescription = "Once Chromium has access, websites will be able to ask you for access.";
+NSCameraUsageDescription = "Once Chromium has access, websites will be able to ask you for access.";
+CFBundleName = "nwjs";
+CFBundleDisplayName = "nwjs";
+CFBundleGetInfoString = "nwjs 72.0.3626.81, Copyright 2019 The Chromium Authors, NW.js contributors, Node.js. All rights reserved.";
+NSHumanReadableCopyright = "Copyright 2019 The Chromium Authors, NW.js contributors, Node.js. All rights reserved.";
+NSBluetoothPeripheralUsageDescription = "Once Chromium has access, websites will be able to ask you for access.";
+NSMicrophoneUsageDescription = "Once Chromium has access, websites will be able to ask you for access.";

@@ -1,0 +1,14 @@
+.outter {
+	width:100%;
+	height:100%;
+	background-color:#cccccc;
+	position:absolute;
+}
+.inner {
+	left:25%;
+	top:25%;
+	width:50%;
+	height:50%;
+	background-color:red;
+	position:absolute;
+}

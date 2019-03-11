@@ -1,0 +1,8 @@
+NSLocationUsageDescription = "Chromium 取得存取權後，網站將可要求你授予存取權。";
+NSCameraUsageDescription = "Chromium 取得存取權後，網站將可要求你授予存取權。";
+CFBundleName = "nwjs";
+CFBundleDisplayName = "nwjs";
+CFBundleGetInfoString = "nwjs 72.0.3626.81, Copyright 2019 The Chromium Authors, NW.js contributors, Node.js. All rights reserved.";
+NSHumanReadableCopyright = "Copyright 2019 The Chromium Authors, NW.js contributors, Node.js. All rights reserved.";
+NSBluetoothPeripheralUsageDescription = "Chromium 取得存取權後，網站將可要求你授予存取權。";
+NSMicrophoneUsageDescription = "Chromium 取得存取權後，網站將可要求你授予存取權。";

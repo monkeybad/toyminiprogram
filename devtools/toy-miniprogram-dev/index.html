@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+  <head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>玩具小程序调试工具</title>
+  </head>
+  
+  <body style="margin: 0 0 0 0;">
+    <webview id="logic_view" allownw src="about:blank" style="width:0px; height:0px; position:absolute; z-index: 0;" display="none" partition="trusted"></webview>
+      <iframe id="ui_view_container" src="./container_view.html" style="width:400px; height:600px; position:absolute; z-index: 0;" onload="onloadUIView(this)"></iframe>
+      <!--webview id="ui_view" allownw src="about:blank" style="width:400px; height:600px; position:absolute" partition="trusted"></webview-->
+
+    <div style="margin-left:400px; margin-right:0px; width:100%; height:100%; position:absolute; z-index: 1;">
+      <div style="margin-left:0px;margin-right:400px;height:100%;">
+        <webview id="logic_devtool" style="top:0;height:400px;margin-left:0px;margin-right:0px;width:100%;" src="about:blank" partition="trusted"></webview>                
+        <!--webview id="ui_devtool" style="top:0;height:400px;margin-left:0px;margin-right:0px;width:100%;" src="about:blank" partition="trusted"></webview-->
+        <iframe id="ui_devtool_container" style="top:0;height:400px;margin-left:0px;margin-right:0px;width:100%;" src="./container_devtool.html" partition="trusted" onload="onloadUIDevtool(this)"></iframe>
+      </div>
+    </div>
+
+  </body>
+  <!-- msgutils.js 是消息通信组件、必须要用script标签引用，require方式不能正常工作 -->
+  <script src="./msgutils.js"> </script>
+  <script>
+    // 基础
+    var fs = require('fs');
+
+    // Virtual-DOM相关
+    var h = require('virtual-dom/h')
+    var dom2hscript = require('dom2hscript');
+
+    // NW.js相关
+      // Get the current window
+      var win = nw.Window.get();
+      
+      if (nw.App.argv.indexOf('inspect') !== -1) {
+          nw.Window.open('about:blank', {
+                         "show": false,
+                         "width": 799,
+                         "height": 799,
+                         }, (inspectWin) => {
+                         inspectWin.maximize()
+                         inspectWin.window.location = "chrome://inspect/#devices"
+                         inspectWin.show()
+                         })
+      }
+  
+      /*
+      // Create a new window and get it
+      nw.Window.open('https://github.com', {}, function(new_win) {
+                     // And listen to new window's focus event
+                     new_win.on('focus', function() {
+                                console.log('New window is focused');
+                                });
+                     
+                     });
+       */
+
+    // 加载视图webview的内容
+    function loadViewContent(webview,callback)
+    {
+      var xmlSrc = "srcProject/page.wxml";
+      var cssSrc = "srcProject/page.wxss";
+
+      var xmlContent = null;
+      var cssContent = null;
+
+      fs.readFile(xmlSrc, 'utf8', function(err, data){
+        xmlContent = data;
+        fs.readFile(cssSrc, 'utf8', function(err, data){
+            cssContent = data;
+
+            // xml转为hscript字符串格式
+            var hscriptString = dom2hscript.parseHTML(xmlContent);
+
+            // 发消息给view层让它执行css和Virtual DOM的第一次渲染
+            MSG.postMsg(webview.contentWindow,'load_vdom_css',{css:cssContent,vdom:hscriptString,xml:xmlContent});
+            MSG.postMsg(webview.contentWindow,'load_data',Page);
+            MSG.registerListener('load_view_finished','',function(msg_type,msg_obj,ctx,origin,source){
+              if (typeof callback != 'undefined' && callback != undefined && callback != null)
+              {
+                callback();
+              }
+            });
+            
+            // 执行第一次渲染另一种方式，注意由于安全原因webview.executeScript是在单独的js空间执行，
+            // 并不能调用和引用页面中的任何js函数，但可以操作dom，通用性优先，没有采用这个接口，而是使用消息通信+virtual-dom
+            // //去掉换行、单双引号替换
+            // xmlContent = xmlContent.replace(/\n/g,"");
+            // xmlContent = xmlContent.replace(/\r/g,"");
+            // xmlContent = xmlContent.replace(/\"/g,"\\\"");
+            // xmlContent = xmlContent.replace(/\'/g,"\\\'");
+
+            // cssContent = cssContent.replace(/\n/g,"");
+            // cssContent = cssContent.replace(/\r/g,"");
+            // cssContent = cssContent.replace(/\"/g,"\\\"");
+            // cssContent = cssContent.replace(/\'/g,"\\\'");
+
+            // var updateHTMLCode = "document.body.innerHTML = \""+xmlContent+"<style>"+cssContent+"</style>\"";
+            // webview.executeScript({ code: updateHTMLCode });
+        });
+      });
+    }
+
+    // page对象，包含data和回调
+    var Page = null;
+
+    function loadLogicAndData(webview,callback) {
+      // 发消息给逻辑层加载数据
+      MSG.registerListener('load_data','',function(msg_type,msg_obj,ctx,origin,source){
+        console.log(msg_obj);
+        Page = msg_obj;
+        if (typeof callback != 'undefined' && callback != undefined && callback != null)
+        {
+          callback(Page);
+        }
+      }); 
+      MSG.postMsg(webview.contentWindow,'load_data',{});
+    }
+
+    // 绑定view向logic的调用传递
+    function bindLogicEventCallback(webview) {
+      MSG.registerListener('call_logic_bind_func','',function(msg_type,msg_obj,ctx,origin,source){
+        console.log(msg_obj);
+        MSG.postMsg(webview.contentWindow,'bind_func',msg_obj);
+      }); 
+    }
+
+    function bindDataUpdate(webview) {
+      MSG.registerListener('update_data','',function(msg_type,msg_obj,ctx,origin,source){
+        console.log(msg_obj);
+        MSG.postMsg(webview.contentWindow,'update_data_to_view',msg_obj);
+      }); 
+    }
+
+    function startViewLogicSyncUpdate() {
+      // 10 fps 刷新
+      setTimeout(function(){
+
+      },100);
+    }
+      
+    // 打开调试窗
+    //win.showDevTools();
+
+    // 加载逻辑层和ui层，并展示调试窗口
+    var loadDOMElements = function(event_src) {
+        // 初始化消息通信模块
+        MSG.init(window);
+
+        // 加载logic和view的页面
+        var logic_webview = document.getElementById("logic_view");
+        var logic_devview = document.getElementById("logic_devtool");
+
+        //var ui_webview = document.getElementById("ui_view");
+        var ui_webview = window.frames["ui_view_container"].contentWindow.document.getElementById('ui_view');
+        //var ui_devview = document.getElementById("ui_devtool");
+        var ui_devview = window.frames["ui_devtool_container"].contentWindow.document.getElementById('ui_devtool');
+              
+        var logicShellJSPath = process.cwd()+'/logic_shell.js';//'file://'+process.cwd()+'/srcProject/page.js';
+        var logicDstJSPath = process.cwd()+'/srcProject/page.js';
+        //var logicLoadHtmlString = "data:text/html,<html><head><meta http-equiv=\"Content-Type\" content=\"text/html; charset=utf-8\"></head><body><script src=\"" + logicJSPath + "\"><"+"/script></body></html>"; 
+        //var logicLoadHtmlString = "data:text/html,<script src=\"" + logicJSPath + "\"><"+"/script>"; 
+        var logicLoadHtmlString = "javascript:var LogicShell=require(\'" + logicShellJSPath + "\'); var Page=LogicShell.Page; require(\'" + logicDstJSPath +"\')"; 
+        console.log(logicLoadHtmlString);
+
+        //logic_webview.src = 'file://'+process.cwd()+'/logic.html';
+
+        logic_webview.src = logicLoadHtmlString;
+        ui_webview.src = 'file://'+process.cwd()+'/view.html';
+        
+          setTimeout(function(){      
+              
+            loadLogicAndData(logic_webview,function(page){
+              loadViewContent(ui_webview,function(){
+                // 绑定view向logic层的事件传递
+                bindLogicEventCallback(logic_webview);
+                // 绑定logic向view的数据更新
+                bindDataUpdate(ui_webview);
+                // load view结束, 开始定时同步view和logic
+                startViewLogicSyncUpdate();
+              });
+            });
+            
+            
+
+                     //logic_webview.showDevTools(true,logic_devview);
+                     logic_webview.showDevTools(true);
+                     //ui_webview.showDevTools(true,ui_devview);
+                     
+                     /*
+                     chrome.devtools.panels.create("Font Picker",
+                                                   "FontPicker.png",
+                                                   "Panel.html",
+                                                   function(panel) {});
+                                                   */
+                     },3000);
+      }
+
+      var loadState = {
+        this_load:false,
+        ui_view_load:false,
+        ui_devtool_load:false,
+        logic_devtool_load:false
+      }
+      
+      var checkAllLoadStateAndCallLoad = function() {
+        if(loadState.this_load && loadState.ui_view_load && loadState.ui_devtool_load)
+        {
+          loadDOMElements();
+        }
+      }
+
+      onload = function() {
+        //loadDOMElements();
+        loadState.this_load = true;
+        checkAllLoadStateAndCallLoad();
+      }
+
+      onloadUIView = function(e) {
+        loadState.ui_view_load = true;
+        checkAllLoadStateAndCallLoad();
+      }
+
+      onloadUIDevtool = function(e) {
+        loadState.ui_devtool_load = true;
+        checkAllLoadStateAndCallLoad();
+      }
+      
+      //var win = nw.Window.get();
+      /*
+      win.showDevTools('', true);
+      win.on("devtools-opened", function(url) {
+             console.log("devtools-opened: " + url);
+             document.getElementById('devtools').src = url;
+             });
+       */
+
+  </script>
+</html>

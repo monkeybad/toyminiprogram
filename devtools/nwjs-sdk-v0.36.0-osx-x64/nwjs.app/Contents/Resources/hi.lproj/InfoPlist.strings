@@ -1,0 +1,8 @@
+NSLocationUsageDescription = "क्रोमियम को एक्सेस मिलने के बाद, वेबसाइटें आपसे एक्सेस मांग सकेंगी.";
+NSCameraUsageDescription = "क्रोमियम को एक्सेस मिलने के बाद, वेबसाइटें आपसे एक्सेस मांग सकेंगी.";
+CFBundleName = "nwjs";
+CFBundleDisplayName = "nwjs";
+CFBundleGetInfoString = "nwjs 72.0.3626.81, Copyright 2019 The Chromium Authors, NW.js contributors, Node.js. All rights reserved.";
+NSHumanReadableCopyright = "Copyright 2019 The Chromium Authors, NW.js contributors, Node.js. All rights reserved.";
+NSBluetoothPeripheralUsageDescription = "क्रोमियम को एक्सेस मिलने के बाद, वेबसाइटें आपसे एक्सेस मांग सकेंगी.";
+NSMicrophoneUsageDescription = "क्रोमियम को एक्सेस मिलने के बाद, वेबसाइटें आपसे एक्सेस मांग सकेंगी.";
