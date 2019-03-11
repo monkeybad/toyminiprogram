@@ -10,9 +10,9 @@
 <br />
 # 演示
 ## 1.wxml、wxss、js代码
-
+![代码演示](https://raw.githubusercontent.com/monkeybad/toyminiprogram/master/document/img/code.jpg '代码演示')
 ## 2.点击事件演示
-
+![动图演示](https://raw.githubusercontent.com/monkeybad/toyminiprogram/master/document/img/demo.gif '动图演示')
 ## 调试程序执行方法
 './run_devtools.sh'
 <br />
