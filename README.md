@@ -22,7 +22,9 @@
 ![Android动图演示](https://raw.githubusercontent.com/monkeybad/toyminiprogram/master/document/img/demo_android.gif 'Android真机动图演示')
 <br />
 ## 调试程序执行方法
+运行开发工具：
 `./run_devtools.sh`
+<br />
 <br />移动端工程目录:
 <br />1. iOS：./mobile/iOS
 <br />2. 安卓：./mobile/android
