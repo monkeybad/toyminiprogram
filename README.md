@@ -26,8 +26,8 @@
 <br />
 # 小程序调试原理解释
 <br />
-## 其他：TODO list
+## 其他(TODO)
 ### 有没有办法让logic直接运行到客户端去调试的方法？
-<br />调研了谷歌官方的safari桥接调试工具[ios-webkit-debug-proxy](https://github.com/google/ios-webkit-debug-proxy)及相关工具，chrome的调试接口协议能找到可用的实现都是基于USB链接设备调试的场景。不能满足远程调试的需求。
+<br />调研了谷歌官方的safari桥接调试工具 [ios-webkit-debug-proxy](https://github.com/google/ios-webkit-debug-proxy) 及相关工具，chrome的调试接口协议能找到可用的实现都是基于USB链接设备调试的场景。不能满足远程调试的需求。
 <br />但是有没有办法基于chrome的调试接口协议来调试真机上的logic部分呢？由于没有深究，也许是有的...。一个思路是将移动设备上safari的webkit debug protocol适配到chrome的调试协议上，再基于代理来调试。
 <br />猜测大家没这么做的原因可能是除了读USB外，没有其他办法读取移动设备上safari或chrome的调试信息（不然为什么safari真机调试非要连USB线呢）。不过这只是一个猜测，还得继续深究...
