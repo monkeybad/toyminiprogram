@@ -1,0 +1,174 @@
+<!DOCTYPE xhtml>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <link type="text/text">
+    <title>view</title>
+  </head>
+  
+  <body style="margin: 0 0 0 0;padding: 0 0 0 0;">
+    <div id="rootNode" style="margin: 0 0 0 0;padding: 0 0 0 0;"></div>
+  </body>
+
+  <!-- msgutils.js 是消息通信组件、必须要用script标签引用，require方式不能正常工作 -->
+  <script src="./msgutils_websocket.js"></script>
+  <!-- 以下是MVVM组件 -->
+  <script src="mvvm/observer.js"></script>
+  <script src="mvvm/watcher.js"></script>
+  <script src="mvvm/compile_miniprogram.js"></script>
+  <script src="mvvm/index.js"></script>
+  <script src="virtual-dom.js"></script>
+  <script>
+    // virtual-dom组件，用于渲染dom和css
+    var h = virtualDom.h;
+    var diff = virtualDom.diff;
+    var patch = virtualDom.patch;
+    var createElement = virtualDom.create;
+
+      var __page_global_vdomContent = null;
+      var __page_global_cssContent = null;
+      var __page_global_page_obj = null;
+      var __page_global_rootNode = null;
+      var __page_global_selfvue = null;
+
+      function getURLParam(paramName) { 
+        paramValue = "", isFound = !1; 
+        if (window.location.search.indexOf("?") == 0 && window.location.search.indexOf("=") > 1) { 
+              arrSource = unescape(window.location.search).substring(1, window.location.search.length).split("&"), i = 0; 
+              while (i < arrSource.length && !isFound) arrSource[i].indexOf("=") > 0 && arrSource[i].split("=")[0].toLowerCase() == paramName.toLowerCase() && (paramValue = arrSource[i].split("=")[1], isFound = !0), i++ 
+          } 
+          return paramValue == "" && (paramValue = null), paramValue 
+      } 
+
+      onload = function () {
+        var serverURL = getURLParam('wsmsgsvr');
+        if(typeof serverURL == 'undefined' || serverURL == undefined || serverURL == null)
+        {
+          serverURL = 'ws://localhost:8001';
+        }
+        MSG_WS.start(serverURL,'view_side',function(isError){
+          console.log('Server closed isError='+isError);
+          window.location = "native://closed";
+        });
+        registerPreloadContent();
+        registerDOMUpdate();
+        registerDataUpdate();
+      }
+
+      // 由于浏览器渲染时默认会把自定义的attribute删掉，这里递归的增加对应的attribute
+      var appendCustomAttributes = function (vnode,elment) {
+        const customizeAttrMap = {
+          'bindtap':{}
+        };
+        if (typeof vnode.tagName != 'undefined')
+        {
+          var properties = vnode.properties;
+          Object.keys(properties).forEach(function(key) {
+            if (typeof customizeAttrMap[key] != 'undefined')
+            {
+              elment.setAttribute(key,properties[key]);
+            }
+          });
+          if (vnode.children.length > 0)
+          {
+            var i = 0; j = 0;
+            for(i = 0; i < vnode.children.length; ++i)
+            {
+              var subVnode = vnode.children[i];
+              if (typeof subVnode.tagName != 'undefined')
+              {
+                var subElement = elment.children[j];
+                j++;
+                appendCustomAttributes(subVnode,subElement);
+              }
+            }
+          }
+        }
+      }
+
+      // 监听外部发过来的html及css样式
+      var registerPreloadContent = function () {
+        // 加载vdom，css样式
+        MSG_WS.registerListener('load_vdom_css','',function(msg_type,msg_obj,ctx,err_code,is_send_failed,src_id,dst_id){
+          __page_global_cssContent = msg_obj.css;
+          __page_global_vdomContent = eval(msg_obj.vdom);
+          var xmlContent = msg_obj.xml;
+
+          // 加载style
+          var cssContent = __page_global_cssContent;
+          document.body.innerHTML = document.body.innerHTML + '<style id=\'basestyle\'></style>'; 
+          document.getElementById("basestyle").innerHTML = cssContent;
+
+          // cssContent = cssContent.replace(/\n/g,"");
+          // cssContent = cssContent.replace(/\r/g,"");
+          // cssContent = cssContent.replace(/\"/g,"\\\"");
+          // cssContent = cssContent.replace(/\'/g,"\\\'");
+
+          // 通过vdom还原html展示
+          var tree = __page_global_vdomContent;
+          console.log(__page_global_vdomContent);
+          __page_global_rootNode = createElement(tree);
+          console.log(__page_global_rootNode);
+          document.getElementById("rootNode").appendChild(__page_global_rootNode);  // 放弃使用virtual-dom，会导致bindtap等属性渲染时丢失
+          appendCustomAttributes(__page_global_vdomContent,__page_global_rootNode); // 添加自定义的属性，因为浏览器渲染时会自动去掉自定义属性，造成问题
+        });
+        // 加载首个数据
+        MSG_WS.registerListener('load_data','',function(msg_type,msg_obj,ctx,err_code,is_send_failed,src_id,dst_id){
+          console.log(msg_obj);
+
+          __page_global_page_obj = msg_obj;
+          var funcs = msg_obj.callfuncs;
+          var methods = {};
+
+          Object.keys(funcs).forEach(function(key) {
+            methods[key] = function (e) {
+              MSG_WS.postMsg(src_id,'call_logic_bind_func',{
+                func_name:key,
+                func_params:[e]
+              });
+            }
+          });
+
+          console.log(methods);
+
+          __page_global_selfvue = new SelfVue({
+            el: '#rootNode',
+            data: __page_global_page_obj.data,
+            methods: methods,
+            mounted: function () {
+              MSG_WS.postMsg(src_id,'load_view_finished','');
+            }
+          });
+
+          console.log(__page_global_page_obj.data);
+        });
+      }
+
+      var registerDOMUpdate = function() {
+        MSG_WS.registerListener('update_vdom_css','',function(msg_type,msg_obj,ctx,err_code,is_send_failed,src_id,dst_id){
+          __page_global_cssContent = msg_obj.css;
+          
+          // 加载style
+          document.getElementById("basestyle").innerHTML = cssContent;
+
+          // 通过vdom计算diff更新html
+          var newTree = eval(msg_obj.vdom);
+          var tree = __page_global_vdomContent;
+          var patches = diff(tree, newTree);
+          __page_global_rootNode = patch(__page_global_rootNode, patches);
+          __page_global_vdomContent = newTree;
+        });
+      }
+
+      // 监听外部发过来的Data更新，包含Virtual DOM更新及Data更新
+      var registerDataUpdate = function() {
+        MSG_WS.registerListener('update_data_to_view','',function(msg_type,msg_obj,ctx,err_code,is_send_failed,src_id,dst_id){
+          __page_global_page_obj = msg_obj;
+          var data = __page_global_page_obj.data;
+          Object.keys(data).forEach(function(key) {
+            __page_global_selfvue.data[key] = data[key];
+          });
+        });
+      }
+  </script>
+</html>
