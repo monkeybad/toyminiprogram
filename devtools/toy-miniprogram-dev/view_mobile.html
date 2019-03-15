@@ -11,7 +11,7 @@
   </body>
 
   <!-- msgutils.js 是消息通信组件、必须要用script标签引用，require方式不能正常工作 -->
-  <script src="./msgutils.js"> </script>
+  <script src="./msgutils_websocket.js"></script>
   <!-- 以下是MVVM组件 -->
   <script src="mvvm/observer.js"></script>
   <script src="mvvm/watcher.js"></script>
@@ -31,8 +31,25 @@
       var __page_global_rootNode = null;
       var __page_global_selfvue = null;
 
+      function getURLParam(paramName) { 
+        paramValue = "", isFound = !1; 
+        if (window.location.search.indexOf("?") == 0 && window.location.search.indexOf("=") > 1) { 
+              arrSource = unescape(window.location.search).substring(1, window.location.search.length).split("&"), i = 0; 
+              while (i < arrSource.length && !isFound) arrSource[i].indexOf("=") > 0 && arrSource[i].split("=")[0].toLowerCase() == paramName.toLowerCase() && (paramValue = arrSource[i].split("=")[1], isFound = !0), i++ 
+          } 
+          return paramValue == "" && (paramValue = null), paramValue 
+      } 
+
       onload = function () {
-        MSG.init(window);
+        var serverURL = getURLParam('wsmsgsvr');
+        if(typeof serverURL == 'undefined' || serverURL == undefined || serverURL == null)
+        {
+          serverURL = 'ws://localhost:8001';
+        }
+        MSG_WS.start(serverURL,'view_side',function(isError){
+          console.log('Server closed isError='+isError);
+          window.location = "native://closed";
+        });
         registerPreloadContent();
         registerDOMUpdate();
         registerDataUpdate();
@@ -72,7 +89,7 @@
       // 监听外部发过来的html及css样式
       var registerPreloadContent = function () {
         // 加载vdom，css样式
-        MSG.registerListener('load_vdom_css','',function(msg_type,msg_obj,ctx,origin,source){
+        MSG_WS.registerListener('load_vdom_css','',function(msg_type,msg_obj,ctx,err_code,is_send_failed,src_id,dst_id){
           __page_global_cssContent = msg_obj.css;
           __page_global_vdomContent = eval(msg_obj.vdom);
           var xmlContent = msg_obj.xml;
@@ -96,7 +113,7 @@
           appendCustomAttributes(__page_global_vdomContent,__page_global_rootNode); // 添加自定义的属性，因为浏览器渲染时会自动去掉自定义属性，造成问题
         });
         // 加载首个数据
-        MSG.registerListener('load_data','',function(msg_type,msg_obj,ctx,origin,source){
+        MSG_WS.registerListener('load_data','',function(msg_type,msg_obj,ctx,err_code,is_send_failed,src_id,dst_id){
           console.log(msg_obj);
 
           __page_global_page_obj = msg_obj;
@@ -105,10 +122,10 @@
 
           Object.keys(funcs).forEach(function(key) {
             methods[key] = function (e) {
-              MSG.postMsg(source,'call_logic_bind_func',{
+              MSG_WS.postMsg(src_id,'call_logic_bind_func',{
                 func_name:key,
                 func_params:[e]
-              },origin);
+              });
             }
           });
 
@@ -119,7 +136,7 @@
             data: __page_global_page_obj.data,
             methods: methods,
             mounted: function () {
-              MSG.postMsg(source,'load_view_finished','',origin);
+              MSG_WS.postMsg(src_id,'load_view_finished','');
             }
           });
 
@@ -128,7 +145,7 @@
       }
 
       var registerDOMUpdate = function() {
-        MSG.registerListener('update_vdom_css','',function(msg_type,msg_obj,ctx,origin,source){
+        MSG_WS.registerListener('update_vdom_css','',function(msg_type,msg_obj,ctx,err_code,is_send_failed,src_id,dst_id){
           __page_global_cssContent = msg_obj.css;
           
           // 加载style
@@ -145,7 +162,7 @@
 
       // 监听外部发过来的Data更新，包含Virtual DOM更新及Data更新
       var registerDataUpdate = function() {
-        MSG.registerListener('update_data_to_view','',function(msg_type,msg_obj,ctx,origin,source){
+        MSG_WS.registerListener('update_data_to_view','',function(msg_type,msg_obj,ctx,err_code,is_send_failed,src_id,dst_id){
           __page_global_page_obj = msg_obj;
           var data = __page_global_page_obj.data;
           Object.keys(data).forEach(function(key) {

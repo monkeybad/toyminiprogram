@@ -1,0 +1,130 @@
+<!DOCTYPE xhtml>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <link type="text/text">
+    <title>MSG_WS Server</title>
+  </head>
+  
+  <body style="margin: 0 0 0 0;padding: 0 0 0 0;">
+    <div id="local_ip">
+      Fetching...
+    </div>
+    <div id="state">
+      Initializing...
+    </div>
+  </body>
+
+  <script>
+    // websocket server，启动后用于MSG_WS间的通信
+    var ws = require("nodejs-websocket");
+    var gClientsMap = {};
+    var serverPort = 8001; // 服务器端口号
+
+    var server = ws.createServer(function(conn){
+        conn.on("text", function (str) {
+          var msg_wrapper = JSON.parse(str);
+          if(typeof msg_wrapper != 'undefined' && typeof msg_wrapper.src_id != 'undefined')
+          {
+            var src_id = msg_wrapper.src_id;
+            if (gClientsMap[src_id] == undefined || gClientsMap[src_id] == null)
+            {
+              gClientsMap[src_id] = conn;
+              document.getElementById('state').innerHTML=JSON.stringify(Object.keys(gClientsMap));
+            }
+            var cmd = msg_wrapper.cmd;
+            if (typeof cmd !=  'undefined')
+            {
+              if(cmd == 'postMSGToClient')
+              {
+                // 发给另外一个客户端
+                var dst_id = msg_wrapper.dst_id;
+                var dst_conn = gClientsMap[dst_id];
+                if (dst_conn != undefined && dst_conn != null)
+                {
+                  // 有目标客户端，进行透传
+                  dst_conn.sendText(str);
+                }
+                else
+                {
+                  // 没有目标客户端，返回失败
+                  var response_msg_wrapper = {
+                    src_id:'Server',
+                    dst_id:src_id,
+                    cmd:cmd,
+                    err_code:-1,
+                    err_msg:'dst_id client not found!',
+                    msg:msg_wrapper.msg
+                  };
+                  conn.sendText(JSON.stringify(response_msg_wrapper));
+                }
+              }
+              else if(cmd == 'getClientList')
+              {
+                // 获取客户端列表
+                var clientList = Object.keys(gClientsMap);
+                if (typeof clientList == 'undefined' || clientList == undefined || clientList == null)
+                {
+                  clientList = [];
+                }
+                var response_msg_wrapper = {
+                  src_id:'Server',
+                  dst_id:src_id,
+                  cmd:'getClientList',
+                  err_code:0,
+                  err_msg:'success',
+                  msg:{
+                    'type':'getClientList',
+                    'obj':JSON.stringify(clientList)
+                  }
+                };
+                conn.sendText(JSON.stringify(response_msg_wrapper));
+              }
+            }
+          }
+        })
+
+        var removeClientFromMap = function(conn) {
+          Object.keys(gClientsMap).forEach(function(key) {
+            var value = gClientsMap[key];
+            if (typeof value != 'undefined' && value == conn)
+            {
+              delete gClientsMap[key];
+              //gClientsMap[key] = null;
+            }
+            document.getElementById('state').innerHTML=JSON.stringify(gClientsMap.keys);
+          });
+        }
+
+        conn.on("close", function (code, reason) {
+          console.log('close');
+          console.log(conn);
+          removeClientFromMap(conn);
+        });
+        conn.on("error", function (code, reason) {
+          console.log('error');
+          console.log(conn);
+          removeClientFromMap(conn);
+        });
+    }).listen(serverPort)
+    document.getElementById('state').innerHTML='Waitting for clients...';
+
+    // 获取本机ip展示并告知客户端链接哪个server
+    var os = require('os');
+    ///////////////////获取本机ip///////////////////////
+    function getIPAdress() {
+      var interfaces = os.networkInterfaces();
+      for (var devName in interfaces) {
+        var iface = interfaces[devName];
+        for (var i = 0; i < iface.length; i++) {
+          var alias = iface[i];
+          if (alias.family === 'IPv4' && alias.address !== '127.0.0.1' && !alias.internal) {
+            return alias.address;
+          }
+        }
+      }
+    }
+    const myHost = getIPAdress();
+    document.getElementById('local_ip').innerHTML='ws://'+myHost+':'+serverPort;
+  </script>
+</html>
