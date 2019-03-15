@@ -23,6 +23,9 @@
 <br />
 ## 调试程序执行方法
 `./run_devtools.sh`
+移动端工程目录
+<br />iOS：./mobile/iOS
+<br />安卓：./mobile/android
 <br />
 # 小程序调试原理解释
 ## 小程序实现原理
