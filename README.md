@@ -30,7 +30,7 @@
 ## 玩具调试器的实现原理
 1. 开发工具使用nw.js实现，该工具是一个电脑端的hybrid开发框架。
 2. 模拟器调试时，所有逻辑都在电脑端，logic相关的js逻辑跑在一个webview tag中（逻辑进程），wxml和wxss被解析成DOM和style（被虚拟化为VDOM方便通信），跑在另一个webview tag中做展示（视图进程），中间通过chrome的事件进行消息通信和Data更新。
-3. 真机调试时，*logic其实还是跑在电脑端*（这个非常重要！），而视图进程跑在手机端的webview中，中间消息通信和Data更新使用websocket实现，背后起了一个webview tag做websocket的server端桥接电脑端logic和手机端view的通信。
+3. 真机调试时，**logic其实还是跑在电脑端（这个非常重要！）**，而视图进程跑在手机端的webview中，中间消息通信和Data更新使用websocket实现，背后起了一个webview tag做websocket的server端桥接电脑端logic和手机端view的通信。
 4. 真机运行时，logic就跑在了手机端的JSC和V8中，中间的消息通信和Data的更新是基于原生bridge调用。
 5. 最核心的部分其实是消息通信的实现，针对不同场景的不同实现（chrome事件/websocket通信/原生bridge）。
 ![逻辑flow](https://raw.githubusercontent.com/monkeybad/toyminiprogram/master/document/img/logic_debug_flow.png '逻辑flow')
